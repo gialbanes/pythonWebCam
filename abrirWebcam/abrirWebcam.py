@@ -19,8 +19,8 @@ while True:
 
     eyes = eye_cascade.detectMultiScale(
         gray, 
-        scaleFactor=1.3,  
-        minNeighbors=5,   
+        scaleFactor=1.1,  
+        minNeighbors=40,   
         minSize=(20,20)   
     )
 
