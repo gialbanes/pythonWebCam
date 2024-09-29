@@ -6,4 +6,4 @@ dos dados obtidos através dele e de uma matriz.
 Até o momento foi utilizado: 
 - Python
 - OpenCV
-- HaarCascades
+- MediaPipe
