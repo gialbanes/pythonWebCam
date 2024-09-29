@@ -1,3 +1,4 @@
+"""
 import cv2
 import os
 from datetime import datetime
@@ -70,4 +71,55 @@ if video is not None:
 
 cap.release()  
 cv2.destroyAllWindows()  
-print("Encerrou")  
+print("Encerrou") 
+"""
+
+
+import cv2
+import mediapipe as mp
+
+cam = cv2.VideoCapture(0)
+face_mash = mp.solutions.face_mesh.FaceMesh(refine_landmarks=True)
+
+_, frame = cam.read()
+frame_h, frame_w, _ = frame.shape
+
+#pega as coordenadas da iris e converte pra pixels  
+def posicao_iris(x, y, frame_w, frame_h):
+    x_px = int(x * frame_w)
+    y_px = int(y * frame_h)
+    return x_px, y_px
+
+while True:
+    _, img = cam.read()
+    rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    #processando a imagem para obter os landmarks
+    results = face_mash.process(rgb_img)
+    landmark_points = results.multi_face_landmarks
+    
+    if landmark_points:
+        landmarks = landmark_points[0].landmark
+        
+        #calcula a média dos pontos das bordas da iris do olho direito, ou seja, está pegando o centro
+        right_iris_x = (landmarks[145].x + landmarks[159].x) / 2
+        right_iris_y = (landmarks[145].y + landmarks[159].y) / 2
+        left_iris_x = (landmarks[374].x + landmarks[386].x) / 2
+        left_iris_y = (landmarks[374].y + landmarks[386].y) / 2
+        
+        #adaptando as coordendas p pixels por meio da função criada anteriormente 
+        right_iris_x_px, right_iris_y_px = posicao_iris(right_iris_x, right_iris_y, frame_w, frame_h)
+        left_iris_x_px, left_iris_y_px = posicao_iris(left_iris_x, left_iris_y, frame_w, frame_h) 
+        
+        #desenhando as bolinhas 
+        cv2.circle(img, (right_iris_x_px, right_iris_y_px), 2, (255, 255, 0), -1)    
+        cv2.circle(img, (left_iris_x_px, left_iris_y_px), 2, (255, 255, 0), -1)    
+            
+    cv2.imshow("Frame", img)
+    
+    if cv2.waitKey(20) & 0xFF==ord('q'):
+        break
+    
+cam.release()
+cv2.destroyAllWindows()
+
