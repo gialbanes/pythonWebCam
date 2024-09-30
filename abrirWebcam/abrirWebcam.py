@@ -74,7 +74,6 @@ cv2.destroyAllWindows()
 print("Encerrou") 
 """
 
-
 import cv2
 import mediapipe as mp
 
@@ -102,10 +101,11 @@ while True:
         landmarks = landmark_points[0].landmark
         
         #calcula a média dos pontos das bordas da iris do olho direito, ou seja, está pegando o centro
-        right_iris_x = (landmarks[145].x + landmarks[159].x) / 2
-        right_iris_y = (landmarks[145].y + landmarks[159].y) / 2
-        left_iris_x = (landmarks[374].x + landmarks[386].x) / 2
-        left_iris_y = (landmarks[374].y + landmarks[386].y) / 2
+        right_iris_x = (landmarks[469].x + landmarks[470].x + landmarks[471].x + landmarks[472].x) / 4
+        right_iris_y = (landmarks[469].y + landmarks[470].y + landmarks[471].y + landmarks[472].y) / 4
+
+        left_iris_x = (landmarks[474].x + landmarks[475].x + landmarks[476].x + landmarks[477].x) / 4
+        left_iris_y = (landmarks[474].y + landmarks[475].y + landmarks[476].y + landmarks[477].y) / 4
         
         #adaptando as coordendas p pixels por meio da função criada anteriormente 
         right_iris_x_px, right_iris_y_px = posicao_iris(right_iris_x, right_iris_y, frame_w, frame_h)
