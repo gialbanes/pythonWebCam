@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap  
 import json  
 import mysql.connector  
+import io  
+from datetime import datetime  # Para lidar com data e hora
 
 WIDTH, HEIGHT = 1560, 1024  
 GRID_SIZE = 100  
@@ -37,7 +39,7 @@ heatmap = np.zeros((HEIGHT // GRID_SIZE, WIDTH // GRID_SIZE))
 colors = [(1, 1, 1, 0), (0, 1, 0, 1), (1, 1, 0, 1), (1, 0, 0, 1)]  
 cmap = LinearSegmentedColormap.from_list("custom_cmap", colors)  
 
-def save_heatmap_to_db(heatmap_matrix, user_id=1):
+def save_heatmap_to_db(heatmap_matrix, heatmap_image, id_cliente=1):
     heatmap_json = json.dumps(heatmap_matrix.tolist())  
     conn = mysql.connector.connect(
         host="localhost",
@@ -46,13 +48,27 @@ def save_heatmap_to_db(heatmap_matrix, user_id=1):
         database="uEye"
     )
     query = conn.cursor()  
+    
+    # Captura a data atual
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
     query.execute("""  
-        INSERT INTO heatmaps (user_id, grid_size, heatmap_data)
-        VALUES (%s, %s, %s);
-    """, (user_id, GRID_SIZE, heatmap_json))  
+        INSERT INTO heatmaps (id_cliente, grid_size, heatmap_data, heatmap_image, created_at)
+        VALUES (%s, %s, %s, %s, %s);
+    """, (id_cliente, GRID_SIZE, heatmap_json, heatmap_image, now))  
     conn.commit()  
     query.close()  
     conn.close()  
+
+def create_heatmap_image(heatmap):
+    plt.figure(figsize=(WIDTH / 100, HEIGHT / 100), dpi=100)
+    plt.imshow(heatmap, cmap=cmap, interpolation='nearest')
+    plt.axis('off')  # Remove os eixos
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    plt.close()
+    buf.seek(0)
+    return buf.getvalue()  # Retorna a imagem em bytes
 
 def display_heatmap(heatmap):
     heatmap_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)  
@@ -108,7 +124,11 @@ while cap.isOpened() and running:
     pygame.display.flip()  
 
 cap.release()  
-save_heatmap_to_db(heatmap)  
+
+heatmap_image = create_heatmap_image(heatmap)  # Cria a imagem do heatmap
+
+# Salva todos os dados no banco de dados
+save_heatmap_to_db(heatmap, heatmap_image)  
 
 display_heatmap(heatmap)  
 
