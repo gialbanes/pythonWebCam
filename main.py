@@ -39,7 +39,7 @@ heatmap = np.zeros((HEIGHT // GRID_SIZE, WIDTH // GRID_SIZE))
 colors = [(1, 1, 1, 0), (0, 1, 0, 1), (1, 1, 0, 1), (1, 0, 0, 1)]  
 cmap = LinearSegmentedColormap.from_list("custom_cmap", colors)  
 
-def save_heatmap_to_db(heatmap_matrix, heatmap_image, id_cliente=1):
+def save_heatmap_to_db(heatmap_matrix, heatmap_image, id_cliente=1, id_tela=1):
     heatmap_json = json.dumps(heatmap_matrix.tolist())  
     conn = mysql.connector.connect(
         host="localhost",
@@ -52,13 +52,18 @@ def save_heatmap_to_db(heatmap_matrix, heatmap_image, id_cliente=1):
     # Captura a data atual
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    query.execute("""  
-        INSERT INTO heatmaps (id_cliente, grid_size, heatmap_data, heatmap_image, created_at)
-        VALUES (%s, %s, %s, %s, %s);
-    """, (id_cliente, GRID_SIZE, heatmap_json, heatmap_image, now))  
-    conn.commit()  
-    query.close()  
-    conn.close()  
+    try:
+        query.execute("""  
+            INSERT INTO heatmaps (id_cliente, id_tela, grid_size, heatmap_data, heatmap_image, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s);
+        """, (id_cliente, id_tela, GRID_SIZE, heatmap_json, heatmap_image, now))  
+        conn.commit()  
+    except mysql.connector.Error as err:
+        print(f"Erro ao inserir dados no banco de dados: {err}")
+    finally:
+        query.close()  
+        conn.close()  
+
 
 def create_heatmap_image(heatmap):
     plt.figure(figsize=(WIDTH / 100, HEIGHT / 100), dpi=100)
