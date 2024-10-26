@@ -7,3 +7,5 @@ Até o momento foi utilizado:
 - Python
 - OpenCV
 - MediaPipe
+- Pygame
+- MySQL
