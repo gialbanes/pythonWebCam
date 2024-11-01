@@ -1,11 +1,11 @@
-import cv2  
-import mediapipe as mp  
-import numpy as np  
-import pygame 
-import matplotlib.pyplot as plt  
-from matplotlib.colors import LinearSegmentedColormap  
-import json  
-import mysql.connector    
+import cv2  # Biblioteca de visão computacional
+import mediapipe as mp  # Framework capaz de detctar elementos em vídeos e imagens
+import numpy as np  # Biblioteca que realiza operações em arrays multidimensionais
+import pygame # Biblioteca para criar interfaces visuais com manipulaçoes de imagens
+import matplotlib.pyplot as plt  # Biblioteca para criação de gráficos 2D e 3D com visualizações estáticas, animadas e interativas
+from matplotlib.colors import LinearSegmentedColormap  # Classe pra criar paleta de cores personalizadas
+import json  # Biblioetca para armazenamento e manipulação de dados no formato JSON
+import mysql.connector # Biblioteca que permite a interação entre o Python e o banco de dados MySQL 
 from datetime import datetime 
 import os  
 
