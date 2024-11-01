@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt  # Biblioteca para criação de gráficos 2D e 3
 from matplotlib.colors import LinearSegmentedColormap  # Classe pra criar paleta de cores personalizadas
 import json  # Biblioetca para armazenamento e manipulação de dados no formato JSON
 import mysql.connector # Biblioteca que permite a interação entre o Python e o banco de dados MySQL 
-from datetime import datetime 
-import os  
+from datetime import datetime # Biblioteca que fornece classes para manipular data e hora 
+import os  # Biblioteca para interagir com o sistema operacional 
 
 WIDTH, HEIGHT = 1560, 1024  
 GRID_SIZE = 70  
