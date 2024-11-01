@@ -1,11 +1,11 @@
-import cv2  
-import mediapipe as mp  
-import numpy as np  
-import pygame 
-import matplotlib.pyplot as plt  
-from matplotlib.colors import LinearSegmentedColormap  
-import json  
-import mysql.connector    
+import cv2  # Biblioteca de visão computacional
+import mediapipe as mp  # Framework capaz de detctar elementos em vídeos e imagens
+import numpy as np  # Biblioteca que realiza operações em arrays multidimensionais
+import pygame # Biblioteca para criar interfaces visuais com manipulaçoes de imagens
+import matplotlib.pyplot as plt  # Biblioteca para criação de gráficos 2D e 3D com visualizações estáticas, animadas e interativas
+from matplotlib.colors import LinearSegmentedColormap  # Classe pra criar paleta de cores personalizadas
+import json  # Biblioetca para armazenamento e manipulação de dados no formato JSON
+import mysql.connector # Biblioteca que permite a interação entre o Python e o banco de dados MySQL 
 from datetime import datetime 
 import os  
 
@@ -39,7 +39,7 @@ heatmap = np.zeros((HEIGHT // GRID_SIZE, WIDTH // GRID_SIZE))
 colors = [(1, 1, 1, 0), (0, 1, 0, 1), (1, 1, 0, 1), (1, 0, 0, 1)]  
 cmap = LinearSegmentedColormap.from_list("custom_cmap", colors)  
 
-def save_heatmap_to_db(heatmap_matrix, filepath, id_cliente=1, id_tela=1):
+def save_heatmap_to_db(heatmap_matrix, filepath, id_tela=1, id_teste=1):
     heatmap_json = json.dumps(heatmap_matrix.tolist())  
     conn = mysql.connector.connect(
         host="localhost",
@@ -53,9 +53,9 @@ def save_heatmap_to_db(heatmap_matrix, filepath, id_cliente=1, id_tela=1):
 
     try:
         query.execute("""
-            INSERT INTO heatmaps (id_cliente, id_tela, grid_size, heatmap_data, heatmap_image, created_at)
+            INSERT INTO heatmaps (id_tela, id_teste, grid_size, heatmap_data, heatmap_image, created_at)
             VALUES (%s, %s, %s, %s, %s, %s);
-        """, (id_cliente, id_tela, GRID_SIZE, heatmap_json, filepath, now))
+        """, (id_tela, id_teste, GRID_SIZE, heatmap_json, filepath, now))
         conn.commit()
     except mysql.connector.Error as err:
         print(f"Erro ao inserir dados no banco de dados: {err}")
