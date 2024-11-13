@@ -189,6 +189,19 @@ def merge_sort(arr):
             j += 1
             k += 1
 
+# Função para ordenar o heatmap_json com Merge Sort
+def sort_heatmap_json_with_merge_sort(heatmap_data):
+    # Carrega o heatmap JSON do banco de dados
+    heatmap_matrix = json.loads(heatmap_data)  # Converte JSON para lista de listas
+
+    # Ordena cada linha da matriz com Merge Sort
+    for row in heatmap_matrix:
+        merge_sort(row)
+
+    # Converte a matriz ordenada de volta para JSON
+    sorted_heatmap_json = json.dumps(heatmap_matrix)
+    return sorted_heatmap_json
+
 
 # Inicia a câmera 
 cap = cv2.VideoCapture(0)  
@@ -270,6 +283,10 @@ heatmap_data = collect_heatmap_json_data() #nota: pega sempre o ultimo heatmap c
 
 # Verifica se a função retornou algum dado e imprime
 if heatmap_data is not None:
-    print("Heatmap Data:", heatmap_data)
+    print("Original Heatmap Data:", heatmap_data)
 else:
     print(f"Não foi encontrado um heatmap")
+
+sorted_heatmap_json = sort_heatmap_json_with_merge_sort(heatmap_data)
+if sorted_heatmap_json:
+    print("Heatmap ordenado em JSON:", sorted_heatmap_json)
