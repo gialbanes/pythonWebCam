@@ -73,6 +73,36 @@ def save_heatmap_to_db(heatmap_matrix, filepath, id_tela=1, id_teste=1):
     finally:
         query.close()
         conn.close()
+def collect_heatmap_json_data():
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="uEye"
+    )
+    query = conn.cursor() # O método cursor permite fazer consultas, interagir com o banco de dados
+    
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        query.execute("""
+            SELECT heatmap_data FROM heatmaps ORDER BY id_heatmap DESC LIMIT 1;
+        """)
+        
+        # Obtendo o dado da consulta
+        result = query.fetchone()
+        
+        # Certificando que um resultado foi encontrado
+        if result:
+            heatmap_data = result[0]
+        else:
+            heatmap_data = None  # Caso não haja dado para o id fornecido
+        
+        return heatmap_data
+    except mysql.connector.Error as err:
+        print(f"Erro ao inserir dados no banco de dados: {err}")
+    finally:
+        query.close()
+        conn.close()
 
 # Função para salvar a imagem do heatmap com o fundo transparente 
 def save_heatmap_image_transparent(matrix, filename):
@@ -126,6 +156,52 @@ def display_heatmap(heatmap):
     screen.blit(design_image, (0, 0))  
     screen.blit(heatmap_surface, (0, 0))  
     pygame.display.flip()  
+
+# Função para o algoritmo de Merge Sort
+def merge_sort(arr):
+    if len(arr) > 1:
+        mid = len(arr) // 2
+        left_half = arr[:mid]
+        right_half = arr[mid:]
+
+        merge_sort(left_half)
+        merge_sort(right_half)
+
+        i = j = k = 0
+
+        # Ordena e combina as sub-listas
+        while i < len(left_half) and j < len(right_half):
+            if left_half[i] < right_half[j]:
+                arr[k] = left_half[i]
+                i += 1
+            else:
+                arr[k] = right_half[j]
+                j += 1
+            k += 1
+
+        while i < len(left_half):
+            arr[k] = left_half[i]
+            i += 1
+            k += 1
+
+        while j < len(right_half):
+            arr[k] = right_half[j]
+            j += 1
+            k += 1
+
+# Função para ordenar o heatmap_json com Merge Sort
+def sort_heatmap_json_with_merge_sort(heatmap_data):
+    # Carrega o heatmap JSON do banco de dados
+    heatmap_matrix = json.loads(heatmap_data)  # Converte JSON para lista de listas
+
+    # Ordena cada linha da matriz com Merge Sort
+    for row in heatmap_matrix:
+        merge_sort(row)
+
+    # Converte a matriz ordenada de volta para JSON
+    sorted_heatmap_json = json.dumps(heatmap_matrix)
+    return sorted_heatmap_json
+
 
 # Inicia a câmera 
 cap = cv2.VideoCapture(0)  
@@ -201,3 +277,16 @@ while waiting:
             waiting = False  
 
 pygame.quit()  
+
+# Chama a função com o ID do heatmap desejado
+heatmap_data = collect_heatmap_json_data() #nota: pega sempre o ultimo heatmap criado (nesse caso o que foi acabado de executar)
+
+# Verifica se a função retornou algum dado e imprime
+if heatmap_data is not None:
+    print("Original Heatmap Data:", heatmap_data)
+else:
+    print(f"Não foi encontrado um heatmap")
+
+sorted_heatmap_json = sort_heatmap_json_with_merge_sort(heatmap_data)
+if sorted_heatmap_json:
+    print("Heatmap ordenado em JSON:", sorted_heatmap_json)
