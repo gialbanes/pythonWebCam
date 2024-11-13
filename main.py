@@ -73,6 +73,36 @@ def save_heatmap_to_db(heatmap_matrix, filepath, id_tela=1, id_teste=1):
     finally:
         query.close()
         conn.close()
+def collect_heatmap_json_data(heatmap_id):
+    conn = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="uEye"
+    )
+    query = conn.cursor() # O método cursor permite fazer consultas, interagir com o banco de dados
+    
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    try:
+        query.execute("""
+            SELECT heatmap_data FROM heatmaps WHERE id_heatmap = %s;
+        """, (heatmap_id,))
+        
+        # Obtendo o dado da consulta
+        result = query.fetchone()
+        
+        # Certificando que um resultado foi encontrado
+        if result:
+            heatmap_data = result[0]
+        else:
+            heatmap_data = None  # Caso não haja dado para o id fornecido
+        
+        return heatmap_data
+    except mysql.connector.Error as err:
+        print(f"Erro ao inserir dados no banco de dados: {err}")
+    finally:
+        query.close()
+        conn.close()
 
 # Função para salvar a imagem do heatmap com o fundo transparente 
 def save_heatmap_image_transparent(matrix, filename):
@@ -201,3 +231,13 @@ while waiting:
             waiting = False  
 
 pygame.quit()  
+
+# Chama a função com o ID do heatmap desejado
+heatmap_id = 1  # Substitua pelo ID do heatmap que deseja consultar
+heatmap_data = collect_heatmap_json_data(heatmap_id)
+
+# Verifica se a função retornou algum dado e imprime
+if heatmap_data is not None:
+    print("Heatmap Data:", heatmap_data)
+else:
+    print(f"Não foi encontrado um heatmap com o ID {heatmap_id}")
