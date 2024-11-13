@@ -73,7 +73,7 @@ def save_heatmap_to_db(heatmap_matrix, filepath, id_tela=1, id_teste=1):
     finally:
         query.close()
         conn.close()
-def collect_heatmap_json_data(heatmap_id):
+def collect_heatmap_json_data():
     conn = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -85,8 +85,8 @@ def collect_heatmap_json_data(heatmap_id):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     try:
         query.execute("""
-            SELECT heatmap_data FROM heatmaps WHERE id_heatmap = %s;
-        """, (heatmap_id,))
+            SELECT heatmap_data FROM heatmaps ORDER BY id_heatmap DESC LIMIT 1;
+        """)
         
         # Obtendo o dado da consulta
         result = query.fetchone()
@@ -233,11 +233,10 @@ while waiting:
 pygame.quit()  
 
 # Chama a função com o ID do heatmap desejado
-heatmap_id = 1  # Substitua pelo ID do heatmap que deseja consultar
-heatmap_data = collect_heatmap_json_data(heatmap_id)
+heatmap_data = collect_heatmap_json_data() #nota: pega sempre o ultimo heatmap criado (nesse caso o que foi acabado de executar)
 
 # Verifica se a função retornou algum dado e imprime
 if heatmap_data is not None:
     print("Heatmap Data:", heatmap_data)
 else:
-    print(f"Não foi encontrado um heatmap com o ID {heatmap_id}")
+    print(f"Não foi encontrado um heatmap")
