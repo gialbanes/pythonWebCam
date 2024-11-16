@@ -9,7 +9,8 @@ MediaPipe
 Pygame
 MySQL
 
-#📋 Passos para Rodar o Projeto
+# 📋 Passos para Rodar o Projeto
+
 1️⃣ Instalação das Dependências
 Para rodar o projeto, instale as bibliotecas necessárias utilizando os seguintes comandos:
 
