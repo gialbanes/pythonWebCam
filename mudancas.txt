@@ -1,15 +1,8 @@
-terão que ser passadas imagens diferentes, pq são vários testes em imagens diferentes
+agora será um único vídeo padrão para todos os testes de todas as pessoas
 
-deverá ser gerado uma imagem de heatmap para cada imagem
+vai ser salvo, o id do heatmap, o id do vídeo, a url da imagem do hetamp, a matriz, o gridsize e a data (id da pessoa ou do teste)
 
-vai ser salvo, o id do heatmap, o id da imagem, a url da imagem do hetamp, a matriz, o gridsize e a data (o id do paciente?)
-
-mas vão ser vários heatmaps, seria estranho jogar todos eles em uma única tabela? pq vou ter um conjunto de 5 heatmaps (assumindo que são 5 telas de teste), ent como eu vou definir de quem é? pelo id do paciente? ou quando era o proejto antigo, tinha o projeto como um todo e as telas dele, agora só temos as imagens, não temos essa entidade maior 
-outra solucao, é que atualmente são salvos com um nome fixo, e p diferenciar, a data no fim do nome do arquivo, teria como add o nome ou id do paciente ao fim, na hora de listar, listava pelo nome
-
-quanto tempo cada imagem deve ser exibida?
-
-eu faço essas alterações esse semestre?
-ou continuo simulando em uma única tela? só que uma imagem que represente um teste de TDAH
+vai ser gerado um único heatmap ao final do vídeo?
+-> então seria um compilado de cada heatmap por frame, gerando uma única imagem do mapa?
 
 a parte do algoritmo de ordenação pode tirar?
