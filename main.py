@@ -5,7 +5,7 @@ import pygame # Biblioteca para criar interfaces visuais com manipulaçoes de im
 import matplotlib.pyplot as plt  # Biblioteca para criação de gráficos 2D e 3D com visualizações estáticas, animadas e interativas
 from matplotlib.colors import LinearSegmentedColormap  # Classe pra criar paleta de cores personalizadas
 import json  # Biblioteca para armazenamento e manipulação de dados no formato JSON
-import mysql.connector # Biblioteca que permite a interação entre o Python e o banco de dados MySQL 
+from pymongo import MongoClient # Biblioteca que permite a interação entre o Python e o BDNR mongo 
 from datetime import datetime # Biblioteca que fornece classes para manipular data e hora 
 import os  # Biblioteca para interagir com o sistema operacional 
 
@@ -40,172 +40,64 @@ def get_iris_center(landmarks, iris_points):
     return int(x * WIDTH), int(y * HEIGHT)  
 
 # Cria a matriz do heatmap, inicialmente preenchida com zeros
-heatmap = np.zeros((HEIGHT // GRID_SIZE, WIDTH // GRID_SIZE))  
+matriz = np.zeros((HEIGHT // GRID_SIZE, WIDTH // GRID_SIZE))  
 
-# Definição das cores do heatmap
-colors = [(1, 1, 1, 0), (0, 1, 0, 1), (1, 1, 0, 1), (1, 0, 0, 1)]  
-# Cria uma mapa de cores lineares com o nome "custom_map" e com as cores definidas anteriormente
-cmap = LinearSegmentedColormap.from_list("custom_cmap", colors)  
-
-# Função para salvar a matriz do heatmap no banco de dados
-def save_heatmap_to_db(heatmap_matrix, filepath, id_tela=1, id_teste=1):
+# Função para salvar a matriz no banco de dados
+def save_matriz_to_db(idUsuario: int, idFase: int, matrizFoco: list, tempoFocoEsperado: float, tempoFoco: float, acertos: int, erros: int, duracao: str = "00:01:00"):
     # A função .toList(), converte a matriz do mapa em uma lista de listas, ou seja, cada linha da matriz, torna-se uma sub-lista dentro da lista principal.
-    # A função json.dumps() converte essa lista em uma String no formato JSON
-    heatmap_json = json.dumps(heatmap_matrix.tolist())  
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="uEye"
-    )
-    query = conn.cursor() # O método cursor permite fazer consultas, interagir com o banco de dados
-    
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S') 
-
+    try: 
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["pi"]
+        collection = db["TestesRastreamentoOcular"]
+        
+        doc = {
+            "idUsuario": idUsuario,
+            "idFase": idFase,
+            "data": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "duracao": duracao,
+            "matrizFoco": matrizFoco.tolist(),
+            "tempoFocoEsperado": tempoFocoEsperado,
+            "tempoFoco": tempoFoco,
+            "acertos": acertos,
+            "erros": erros  
+        }
+        collection.insert_one(doc)
+        print("✅ Dados salvos com sucesso no mongoDB!")
+    except Exception as e:
+        print(f"❌ Erro ao salvar dados: {e}")
+        
+def collect_matriz_json_data():
     try:
-        query.execute("""
-            INSERT INTO heatmaps (id_tela, id_teste, grid_size, heatmap_data, heatmap_image, created_at)
-            VALUES (%s, %s, %s, %s, %s, %s);
-        """, (id_tela, id_teste, GRID_SIZE, heatmap_json, filepath, now))
-        conn.commit() # Finaliza fazendo com o que os dados sejam salvos no BD
-    except mysql.connector.Error as err:
-        print(f"Erro ao inserir dados no banco de dados: {err}")
-    finally:
-        query.close()
-        conn.close()
-def collect_heatmap_json_data():
-    conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="uEye"
-    )
-    query = conn.cursor() # O método cursor permite fazer consultas, interagir com o banco de dados
-    
-    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    try:
-        query.execute("""
-            SELECT heatmap_data FROM heatmaps ORDER BY id_heatmap DESC LIMIT 1;
-        """)
+        client = MongoClient("mongodb://localhost:27017/")
+        db = client["pi"]
+        collection = db["TestesRastreamentoOcular"]
         
-        # Obtendo o dado da consulta
-        result = query.fetchone()
+        # Buscar a matriz mais recente pelo id decrescente
+        resultado = collection.find({}, sort=[("_id", -1)]).limit(3)
         
-        # Certificando que um resultado foi encontrado
-        if result:
-            heatmap_data = result[0]
-        else:
-            heatmap_data = None  # Caso não haja dado para o id fornecido
+        total_acertos = 0 
+        total_erros = 0 
         
-        return heatmap_data
-    except mysql.connector.Error as err:
-        print(f"Erro ao inserir dados no banco de dados: {err}")
-    finally:
-        query.close()
-        conn.close()
-
-# Função para salvar a imagem do heatmap com o fundo transparente 
-def save_heatmap_image_transparent(matrix, filename):
-    plt.figure(figsize=(8, 6), dpi=100)
-    # Exibe a matriz como uma imagem 2D como um mapa de calor
-    # cmap=cmap: cores definidas anteriormente 
-    # interpolation='nearest': faz com que os pixels sejam exibidos como blocos sólidos 
-    # extent=[0, WIDTH, HEIGHT, 0]: define os limites da imagem de acordo com as dimensões definidas anteriormente
-    plt.imshow(matrix, cmap=cmap, alpha=0.5, interpolation='nearest', extent=[0, WIDTH, HEIGHT, 0])
-    # Desliga os eixos da figure, ou seja, na janela só aparece  o heatmap
-    plt.axis('off')  
-    # Salva a imagem
-    # bbox_inches='tight': Remove os espaços em branco ao redor da imagem, recortando-a para ajustar exatamente ao conteúdo.
-    # pad_inches=0:  Elimina qualquer espaço de preenchimento adicional ao redor da imagem.
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0, dpi=300, transparent=True)  
-    plt.close()  
-
-# Função para gerar um nome único a cada imagem gerada através do heatmap 
-def generate_unique_filename():
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")  
-    return f"heatmap_transparent_{timestamp}.png"
-
-# Função pra exibir a imagem do heatmap em cima do design 
-def display_heatmap(heatmap):
-    # Cria uma superfície onde o heatmap será desenhado, definindo as dimensões criadas anteriormente e fazendo com que a superfície suporte transparência
-    heatmap_surface = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)  
-
-    # Encontra o valor máximo na matriz pra normalizar as intensidades das cores 
-    # if np.any(heatmap): verifica se tem algum valor diferente de 0 na matriz, ou seja, se o cliente focou em uma região
-    # np.max(heatmap): se tiver valores diferentes de 0, essa função retorna o valor máximo na matriz
-    # else 1: se todos os valores da matriz forem 0, o max_count é definido como 1, só pra evitar divisão por 0 na próxima etapa.
-    max_count = np.max(heatmap) if np.any(heatmap) else 1  
-    # Percorre cada grid_size da matriz
-    for y in range(heatmap.shape[0]): # Linhas
-        for x in range(heatmap.shape[1]): # Colunas
-            # Conta a intensidade em cada cédula, ou seja, de quanto foi o foco visual do cliente
-            count = heatmap[y, x]  
-            if count > 0:
-                # Normaliza o valor de count de 0 a 1 
-                normalized_value = count / max_count  
-                # Converte o valor em uma cor de acordo com o mapa de cores lineares criado anteriormente 
-                color = cmap(normalized_value)  
-                # Transforma as cores R, G, e B de 0-1 para 0-255 e define 128 para o canal de transparência (A), tornando as áreas semitransparentes
-                rgba_color = (int(color[0] * 255), int(color[1] * 255), int(color[2] * 255), 128)  
-                # Desenha um quadrado preenchido na superfície criada pra representar o foco x,y
-                # x * GRID_SIZE, y * GRID_SIZE: posição do quadrado na superfície
-                # GRID_SIZE, GRID_SIZE: largura e altura do quadrado
-                pygame.draw.rect(heatmap_surface, rgba_color, (x * GRID_SIZE, y * GRID_SIZE, GRID_SIZE, GRID_SIZE))  
-
-    # Exibe o design com o HeatMap em cima no canto superior esquerdo da janela
-    screen.blit(design_image, (0, 0))  
-    screen.blit(heatmap_surface, (0, 0))  
-    pygame.display.flip()  
-
-# Função para o algoritmo de Merge Sort
-def merge_sort(arr):
-    if len(arr) > 1:
-        mid = len(arr) // 2
-        left_half = arr[:mid]
-        right_half = arr[mid:]
-
-        merge_sort(left_half)
-        merge_sort(right_half)
-
-        i = j = k = 0
-
-        # Ordena e combina as sub-listas
-        while i < len(left_half) and j < len(right_half):
-            if left_half[i] < right_half[j]:
-                arr[k] = left_half[i]
-                i += 1
-            else:
-                arr[k] = right_half[j]
-                j += 1
-            k += 1
-
-        while i < len(left_half):
-            arr[k] = left_half[i]
-            i += 1
-            k += 1
-
-        while j < len(right_half):
-            arr[k] = right_half[j]
-            j += 1
-            k += 1
-
-# Função para ordenar o heatmap_json com Merge Sort
-def sort_heatmap_json_with_merge_sort(heatmap_data):
-    # Carrega o heatmap JSON do banco de dados
-    heatmap_matrix = json.loads(heatmap_data)  # Converte JSON para lista de listas
-
-    # Ordena cada linha da matriz com Merge Sort
-    for row in heatmap_matrix:
-        merge_sort(row)
-
-    # Converte a matriz ordenada de volta para JSON
-    sorted_heatmap_json = json.dumps(heatmap_matrix)
-    return sorted_heatmap_json
+        for doc in resultado:
+            acertos = doc.get("acertos", 0)
+            erros = doc.get("erros", 0)
+            total_acertos += acertos
+            total_erros += erros
+            matriz = doc["matrizFoco"]
+            print(f"Matriz Foco: {matriz}")
+            
+        # Exibe o total de acertos e erros no terminal
+        print(f"Total de acertos nos últimos 3 testes: {total_acertos}")
+        print(f"Total de erros nos últimos 3 testes: {total_erros}")
+    except Exception as e:
+        print(f"❌ Erro ao buscar dados no MongoDB: {e}")
+        return None
 
 
 # Inicia a câmera 
 cap = cv2.VideoCapture(0)  
 running = True  
+
 
 while cap.isOpened() and running:  
     success, frame = cap.read()  
@@ -215,7 +107,10 @@ while cap.isOpened() and running:
     # Espelha a imagem
     frame = cv2.flip(frame, 1)  
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  
-    results = face_mesh.process(rgb_frame)  
+    results = face_mesh.process(rgb_frame) 
+    
+    if design_image:
+        screen.blit(design_image, (0, 0)) 
 
     # Para cada rosto detectado no frame:
     if results.multi_face_landmarks:  
@@ -233,21 +128,14 @@ while cap.isOpened() and running:
             grid_y = iris_y // GRID_SIZE  
 
             # Verifica se o olhar mapeado pra tela está dentro do heatmap pra evitar erros 
-            if 0 <= grid_x < heatmap.shape[1] and 0 <= grid_y < heatmap.shape[0]:
+            if 0 <= grid_x < matriz.shape[1] and 0 <= grid_y < matriz.shape[0]:
                 # Incrementa o valor de cada cédula
-                heatmap[grid_y, grid_x] += 1  
+                matriz[grid_y, grid_x] += 1  
 
     # Permite fechar a janela do pygame e encerrar o rastreamento ocular quando eu clico pra sair
     for event in pygame.event.get():
         if event.type == pygame.QUIT:  
             running = False  
-
-    # Prepara a tela pra receber o design com o heatmap por cima
-    # Limpa a tela, preenchendo-a com preto
-    screen.fill((0, 0, 0))  
-    if design_image is not None:
-         # Desenha design_image na tela
-        screen.blit(design_image, (0, 0))  
 
     # Atualiza a tela com as novas mudanças.
     pygame.display.flip()  
@@ -255,19 +143,17 @@ while cap.isOpened() and running:
 # Libera o recuso da câmera 
 cap.release()  
 
-# Cria a pasta "heatmaps" se ela não existir
-if not os.path.exists("heatmaps"):
-    os.makedirs("heatmaps")  
-
-# Chamada das funções 
-unique_filename = generate_unique_filename()
-local_filepath = f"./heatmaps/{unique_filename}"  
-
-save_heatmap_image_transparent(heatmap, filename=local_filepath)
-
-save_heatmap_to_db(heatmap, local_filepath)
-
-display_heatmap(heatmap)
+# Chamada da função pra salvar a matriz no mongo
+save_matriz_to_db(
+    idUsuario=1,
+    idFase=1,
+    matrizFoco=matriz, 
+    tempoFocoEsperado=0.3,
+    tempoFoco=0.3,
+    acertos=5,
+    erros=2
+)
+collect_matriz_json_data()
 
 # Fechamento das janelas 
 waiting = True
@@ -278,15 +164,3 @@ while waiting:
 
 pygame.quit()  
 
-# Chama a função com o ID do heatmap desejado
-heatmap_data = collect_heatmap_json_data() #nota: pega sempre o ultimo heatmap criado (nesse caso o que foi acabado de executar)
-
-# Verifica se a função retornou algum dado e imprime
-if heatmap_data is not None:
-    print("Original Heatmap Data:", heatmap_data)
-else:
-    print(f"Não foi encontrado um heatmap")
-
-sorted_heatmap_json = sort_heatmap_json_with_merge_sort(heatmap_data)
-if sorted_heatmap_json:
-    print("Heatmap ordenado em JSON:", sorted_heatmap_json)

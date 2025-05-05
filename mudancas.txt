@@ -1,8 +1,0 @@
-agora será um único vídeo padrão para todos os testes de todas as pessoas
-
-vai ser salvo, o id do heatmap, o id do vídeo, a url da imagem do hetamp, a matriz, o gridsize e a data (id da pessoa ou do teste)
-
-vai ser gerado um único heatmap ao final do vídeo?
--> então seria um compilado de cada heatmap por frame, gerando uma única imagem do mapa?
-
-a parte do algoritmo de ordenação pode tirar?
