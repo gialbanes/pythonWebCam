@@ -19,8 +19,10 @@ EyeTrackQuest é um aplicativo interativo desenvolvido para realizar o rastreame
 
 ```plaintext
 pythonWebcam/
-├── main.py                 # script do rastreamento ocular
+├── main.py                 # Script do rastreamento ocular
 ├── README.md               # Documentação do projeto
+├── .gitignore              # Arquivos ignorados pelo Git
+├── img.png                 # Imagem de uma fase do jogo que será aberta pelo PyGame
 ```
 
 ## 📦 Instalação
