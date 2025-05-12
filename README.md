@@ -36,7 +36,7 @@ cd pythonWebcam
 2. Instale as dependências:
 
 ```bash
-pip install -r requirements.txt
+pip install opencv-python mediapipe numpy pygame pymongo
 ```
 
 3. Execute o script principal:
