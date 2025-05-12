@@ -1,26 +1,69 @@
-# 👁️ Eye Tracking com Python 
-Repositório dedicado ao Projeto Integrador.
-O objetivo principal é desenvolver um sistema de rastreamento ocular que gere um mapa de calor (heatmap) a partir dos dados obtidos e de uma matriz.
+# EyeTrackQuest
 
-# 🛠️ Tecnologias Utilizadas
-- Python
-- OpenCV
-- MediaPipe
-- Pygame
-- MySQL
+EyeTrackQuest é um aplicativo interativo desenvolvido para realizar o rastreamento ocular em tempo real. O sistema coleta dados do movimento ocular e os armazena para análise posterior.
 
-# 📋 Passos para Rodar o Projeto
+## 🚀 Funcionalidades
+- **Rastreamento Ocular**: Captura e rastreia o movimento dos olhos em tempo real.
+- **Armazenamento de Dados**: Salva os dados de foco ocular em um banco de dados MongoDB.
+- **Análise de Desempenho**: Permite a coleta de acertos, erros e o tempo de foco para avaliação.
+- **Interface Visual**: Mostra o design e resultados diretamente na tela do jogo.
 
-1️⃣ Instalação das Dependências
-Para rodar o projeto, instale as bibliotecas necessárias utilizando os seguintes comandos:
+## 🛠️ Tecnologias Utilizadas
+- **OpenCV**: Biblioteca de visão computacional para capturar imagens da webcam e processá-las.
+- **MediaPipe**: Framework para rastreamento de pontos faciais e oculares.
+- **Pygame**: Biblioteca para criar interfaces gráficas e interatividade.
+- **MongoDB**: Banco de dados para armazenar os resultados dos testes de rastreamento ocular.
+- **Python**: Linguagem de programação principal para a lógica do aplicativo.
 
-- pip install opencv-python
-- pip install mediapipe
-- pip install numpy
-- pip install pygame
-- pip install matplotlib
-- pip install mysql-connector-python
-  
-2️⃣ Configuração do Banco de Dados
+## 📂 Estrutura do Projeto
 
-Certifique-se de criar a tabela heatmaps no banco de dados por último.
+```plaintext
+pythonWebcam/
+├── main.py                 # script do rastreamento ocular
+├── README.md               # Documentação do projeto
+```
+
+## 📦 Instalação
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/gialbanes/pythonWebcam.git
+cd pythonWebcam
+```
+
+2. Instale as dependências:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. Execute o script principal:
+```bash
+python main.py
+```
+
+## 🕹️ Como testar?
+1. Ao iniciar a aplicação, a camêra será inicializada e uma janela do PyGame aberta com uma imagem de uma fase do jogo
+
+2. Permaneça olhando para os elementos da tela enquanto o rastreamento ocualar acontece
+
+3. Ao fechar a janela do PyGame, no seu terminal, serão exibidos alguns dados, sendo eles:
+- As últimas 3 matrizes registradas no banco, correnpondente ao seu olhar nas supostas 3 fases do jogo (até o momento é somente uma fase)
+- Média de acertos nas 3 fases
+- Média de erros nas 3 fases
+- O tempo que você demorou no rastreamento ocular 
+
+Esses dados serão utilizados para análises futuras do comportamento do jogador, para assim, gerar o feedback à ele.
+
+
+## 📖 Funções Principais
+- get_iris_center(): Calcula o centro da íris com base nos pontos fornecidos pelo MediaPipe.
+
+- save_matriz_to_db(): Salva os dados de rastreamento ocular (foco e tempo de observação) no banco de dados MongoDB.
+
+- collect_matriz_json_data(): Coleta os últimos dados salvos no banco para análise de desempenho.
+
+## 📄 Licença
+Este projeto está licenciado sob a MIT License.
+
+Desenvolvido com ❤️ por Amanda, Arthur e Giovana.
