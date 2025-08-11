@@ -1,6 +1,6 @@
-# EyeTrackQuest
+# Focus Quest
 
-EyeTrackQuest é um aplicativo interativo desenvolvido para realizar o rastreamento ocular em tempo real. O sistema coleta dados do movimento ocular e os armazena para análise posterior.
+Focus Quest é um aplicativo interativo desenvolvido para realizar o rastreamento ocular em tempo real. O sistema coleta dados do movimento ocular e os armazena para análise posterior.
 
 ## 🚀 Funcionalidades
 - **Rastreamento Ocular**: Captura e rastreia o movimento dos olhos em tempo real.
