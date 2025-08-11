@@ -25,6 +25,26 @@ pythonWebcam/
 ├── img.png                 # Imagem de uma fase do jogo que será aberta pelo PyGame
 ```
 
+## Atenção!
+O MediaPipe não possui compatibilidade com a versão 3.13 do Python. Portanto, se for necessário, crie uma venv com a versão 3.12. 
+
+1. Baixe a versão correta do Python 
+
+2. No terminal do seu projeto, para criar a venv: 
+```bash
+py -3.12 -m venv venv312  
+```
+
+3. Em seguida, ative a venv com: 
+```bash
+venv312\Scripts\activate
+```
+
+4. Para checar que a versão está correta:
+```bash
+python --version
+```
+
 ## 📦 Instalação
 1. Clone o repositório:
 
